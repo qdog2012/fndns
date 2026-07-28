@@ -1,5 +1,5 @@
 appname         = com.fndns.manager
-version         = 1.0.8
+version         = 1.0.9
 display_name    = DNS 管理器
 platform        = x86
 maintainer      = fndns

@@ -52,8 +52,8 @@ Linux / macOS：
 构建产物：
 
 ```text
-dist/com.fndns.manager_1.0.8_x86.fpk
-dist/com.fndns.manager_1.0.8_arm.fpk
+dist/com.fndns.manager_1.0.9_x86.fpk
+dist/com.fndns.manager_1.0.9_arm.fpk
 ```
 
 详细安装步骤见 [docs/FNOS_INSTALL.md](docs/FNOS_INSTALL.md)，API 权限建议见 [docs/API_CREDENTIALS.md](docs/API_CREDENTIALS.md)。

@@ -118,6 +118,14 @@ CREATE INDEX IF NOT EXISTS idx_logs_filters ON audit_logs(credential_id, domain,
 	if _, err := s.db.ExecContext(ctx, schema); err != nil {
 		return fmt.Errorf("初始化数据库: %w", err)
 	}
+	// record_count describes the locally cached records, not a provider's
+	// domain metadata. Recalculate it on startup to repair databases written by
+	// older versions that replaced Cloudflare counts with zero during zone sync.
+	if _, err := s.db.ExecContext(ctx, `UPDATE domains
+    SET record_count=(SELECT COUNT(*) FROM records WHERE records.domain_id=domains.id)
+    WHERE last_sync_at IS NOT NULL`); err != nil {
+		return fmt.Errorf("修复域名记录数: %w", err)
+	}
 	return nil
 }
 
@@ -270,7 +278,8 @@ func (s *Store) SyncDomains(ctx context.Context, credentialID string, remote []m
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(credential_id, remote_id) DO UPDATE SET
         name=excluded.name, status=excluded.status, grade=excluded.grade,
-        record_count=excluded.record_count, updated_at=excluded.updated_at`, domainID,
+        record_count=CASE WHEN domains.last_sync_at IS NULL THEN excluded.record_count ELSE domains.record_count END,
+        updated_at=excluded.updated_at`, domainID,
 			credentialID, domain.RemoteID, strings.ToLower(domain.Name), domain.Status, domain.Grade,
 			domain.RecordCount, now, now)
 		if err != nil {

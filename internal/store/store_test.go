@@ -83,6 +83,69 @@ func TestCacheExpiresAfterSixMonthsButDataRemains(t *testing.T) {
 	}
 }
 
+func TestSyncDomainsPreservesCachedRecordCount(t *testing.T) {
+	ctx := context.Background()
+	databasePath := filepath.Join(t.TempDir(), "test.db")
+	storage, err := Open(databasePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = storage.Close() }()
+	now := time.Now()
+	credential := model.StoredCredential{Credential: model.Credential{ID: "c1", Name: "cloudflare", Provider: model.ProviderCloudflare, CreatedAt: now, UpdatedAt: now}, EncryptedSecret: []byte("a")}
+	if err := storage.CreateCredential(ctx, credential); err != nil {
+		t.Fatal(err)
+	}
+	remoteDomain := model.RemoteDomain{RemoteID: "z1", Name: "example.com", RecordCount: 0}
+	if err := storage.SyncDomains(ctx, "c1", []model.RemoteDomain{remoteDomain}); err != nil {
+		t.Fatal(err)
+	}
+	domains, err := storage.ListDomains(ctx)
+	if err != nil || len(domains) != 1 {
+		t.Fatalf("expected one domain: domains=%d err=%v", len(domains), err)
+	}
+	records := []model.RemoteRecord{
+		{RemoteID: "r1", Name: "@", Type: "A", Value: "192.0.2.1"},
+		{RemoteID: "r2", Name: "www", Type: "A", Value: "192.0.2.2"},
+	}
+	if err := storage.SyncRecords(ctx, domains[0].ID, records); err != nil {
+		t.Fatal(err)
+	}
+
+	// Cloudflare's zone list does not include a DNS record count. Refreshing
+	// domains must not replace the locally cached count with its zero value.
+	if err := storage.SyncDomains(ctx, "c1", []model.RemoteDomain{remoteDomain}); err != nil {
+		t.Fatal(err)
+	}
+	domain, err := storage.GetDomain(ctx, domains[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if domain.RecordCount != len(records) {
+		t.Fatalf("cached record count changed after domain sync: got=%d want=%d", domain.RecordCount, len(records))
+	}
+
+	// Opening an existing database must also repair a count that an older
+	// version already replaced with zero.
+	if _, err := storage.db.ExecContext(ctx, `UPDATE domains SET record_count=0 WHERE id=?`, domain.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := storage.Close(); err != nil {
+		t.Fatal(err)
+	}
+	storage, err = Open(databasePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	domain, err = storage.GetDomain(ctx, domain.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if domain.RecordCount != len(records) {
+		t.Fatalf("startup repair returned wrong count: got=%d want=%d", domain.RecordCount, len(records))
+	}
+}
+
 func TestSyncRecordsPreservesLocalIDs(t *testing.T) {
 	ctx := context.Background()
 	storage, err := Open(filepath.Join(t.TempDir(), "test.db"))
