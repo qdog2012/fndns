@@ -1,0 +1,75 @@
+#!/bin/bash
+
+PID_FILE="${TRIM_PKGVAR}/fndns.pid"
+LOG_FILE="${TRIM_PKGVAR}/fndns.log"
+DATA_DIR="${TRIM_PKGVAR}/data"
+BINARY="${TRIM_APPDEST}/bin/fndns"
+PORT="${TRIM_SERVICE_PORT:-18788}"
+
+is_running() {
+  [ -f "$PID_FILE" ] || return 1
+  local pid
+  pid="$(cat "$PID_FILE" 2>/dev/null)"
+  [ -n "$pid" ] || return 1
+  kill -0 "$pid" 2>/dev/null || return 1
+  [ "$(readlink -f "/proc/${pid}/exe" 2>/dev/null)" = "$(readlink -f "$BINARY" 2>/dev/null)" ]
+}
+
+write_error() {
+  local message="$1"
+  if [ -n "${TRIM_TEMP_LOGFILE:-}" ]; then
+    printf '%s\n' "$message" > "$TRIM_TEMP_LOGFILE"
+  fi
+  printf '%s\n' "$message" >&2
+}
+
+case "$1" in
+  start)
+    if is_running; then
+      exit 0
+    fi
+    if [ ! -x "$BINARY" ]; then
+      write_error "DNS 管理器可执行文件不存在或没有执行权限。"
+      exit 1
+    fi
+    mkdir -p "$DATA_DIR"
+    chmod 700 "$DATA_DIR" 2>/dev/null || true
+    # 采用当前稳定 FNOS 发布包支持的 iframe 端口入口。
+    # 后端只给同站 FNOS WebUI iframe 建立会话，直接打开端口 URL 返回 404。
+    nohup "$BINARY" --listen "0.0.0.0:${PORT}" --require-fnos-webui --data-dir "$DATA_DIR" >> "$LOG_FILE" 2>&1 &
+    echo "$!" > "$PID_FILE"
+    sleep 1
+    if ! is_running; then
+      write_error "DNS 管理器启动失败，请查看 ${LOG_FILE}。"
+      exit 1
+    fi
+    exit 0
+    ;;
+  stop)
+    if ! is_running; then
+      rm -f "$PID_FILE"
+      exit 0
+    fi
+    pid="$(cat "$PID_FILE")"
+    kill "$pid" 2>/dev/null || true
+    count=0
+    while kill -0 "$pid" 2>/dev/null && [ "$count" -lt 15 ]; do
+      sleep 1
+      count=$((count + 1))
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+      kill -9 "$pid" 2>/dev/null || true
+    fi
+    rm -f "$PID_FILE"
+    exit 0
+    ;;
+  status)
+    if is_running; then
+      exit 0
+    fi
+    exit 3
+    ;;
+  *)
+    exit 1
+    ;;
+esac

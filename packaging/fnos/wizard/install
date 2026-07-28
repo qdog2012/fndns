@@ -1,0 +1,12 @@
+[
+  {
+    "stepTitle": "安装 DNS 管理器",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "安装完成后，请从飞牛 OS 管理员桌面启动应用，并在应用内添加 Cloudflare API Token 或腾讯云 DNSPod 密钥。所有凭据都会在本机加密保存。"
+      }
+    ]
+  }
+]
+

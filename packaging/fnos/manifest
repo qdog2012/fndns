@@ -1,0 +1,16 @@
+appname         = com.fndns.manager
+version         = 1.0.8
+display_name    = DNS 管理器
+platform        = x86
+maintainer      = fndns
+distributor     = fndns
+desktop_uidir   = ui
+desktop_applaunchname = com.fndns.manager.Application
+service_port    = 18788
+checkport       = true
+ctl_stop        = true
+os_min_version  = 1.1.8
+desc            = 在飞牛 OS 中统一管理 Cloudflare 与腾讯云 DNSPod 解析记录，支持加密凭据、本地缓存、批量操作与六个月审计日志。
+source          = thirdparty
+changelog       = 改用当前稳定 FNOS 支持的 iframe 端口入口，并阻止浏览器直接打开应用 URL。
+checksum        =

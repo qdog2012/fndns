@@ -1,0 +1,5 @@
+#!/bin/bash
+mkdir -p "${TRIM_PKGVAR}/data"
+chmod 700 "${TRIM_PKGVAR}/data" 2>/dev/null || true
+exit 0
+

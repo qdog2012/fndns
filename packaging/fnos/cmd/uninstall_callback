@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "${wizard_delete_data:-false}" = "true" ]; then
+  rm -rf -- "${TRIM_PKGVAR}/data"
+  rm -f -- "${TRIM_PKGVAR}/fndns.db" "${TRIM_PKGVAR}/master.key" "${TRIM_PKGVAR}/fndns.log" "${TRIM_PKGVAR}/fndns.pid"
+fi
+exit 0
+

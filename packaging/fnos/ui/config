@@ -1,0 +1,13 @@
+{
+  ".url": {
+    "com.fndns.manager.Application": {
+      "title": "DNS 管理器",
+      "icon": "images/{0}.png",
+      "type": "iframe",
+      "protocol": "http",
+      "port": "18788",
+      "url": "/",
+      "allUsers": false
+    }
+  }
+}

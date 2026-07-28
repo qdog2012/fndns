@@ -1,0 +1,28 @@
+[
+  {
+    "stepTitle": "卸载 DNS 管理器",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "你可以保留加密凭据、缓存和操作日志，以便重新安装后继续使用。"
+      },
+      {
+        "type": "radio",
+        "field": "wizard_delete_data",
+        "label": "应用数据处理方式",
+        "initValue": "false",
+        "options": [
+          {
+            "label": "保留应用数据（推荐）",
+            "value": "false"
+          },
+          {
+            "label": "永久删除凭据、缓存和日志（不可恢复）",
+            "value": "true"
+          }
+        ]
+      }
+    ]
+  }
+]
+

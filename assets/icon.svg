@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><clipPath id="app-shape"><rect x="8" y="8" width="240" height="240" rx="64"/></clipPath></defs>
+  <g clip-path="url(#app-shape)">
+    <rect x="8" y="8" width="240" height="240" rx="64" fill="#2775E6"/>
+    <rect x="10" y="10" width="236" height="236" rx="62" stroke="white" stroke-opacity=".22" stroke-width="4"/>
+    <circle cx="53" cy="129" r="76" stroke="white" stroke-opacity=".28" stroke-width="5"/>
+    <circle cx="211" cy="45" r="65" stroke="white" stroke-opacity=".25" stroke-width="5"/>
+    <path d="M73 77L128 128L193 93M128 128L83 187M128 128L189 181" stroke="white" stroke-opacity=".72" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="73" cy="77" r="14" fill="white"/>
+    <circle cx="193" cy="93" r="14" fill="white"/>
+    <circle cx="83" cy="187" r="14" fill="white"/>
+    <circle cx="189" cy="181" r="14" fill="white"/>
+    <circle cx="128" cy="128" r="24" fill="#A1F3FF"/>
+    <circle cx="128" cy="128" r="13" fill="white"/>
+  </g>
+</svg>
