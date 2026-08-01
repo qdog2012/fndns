@@ -24,7 +24,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
 import { Button, EmptyState, Field, Modal, ProviderMark } from '../components'
 import type { Capability, Credential, DNSRecord, Domain, Overview, Provider, RecordInput } from '../types'
-import { formatTime, isEnabled, providerName, recordStatus, relativeTime } from '../utils'
+import { copyText, formatTime, isEnabled, providerName, recordStatus, relativeTime } from '../utils'
 
 interface DomainsProps {
   domains: Domain[]
@@ -198,6 +198,15 @@ function RecordsPage({ domainId, onBack, notify }: { domainId: string; onBack: (
     }
   }
 
+  const copyRecordValue = async (value: string) => {
+    try {
+      await copyText(value)
+      notify('success', '记录值已复制')
+    } catch {
+      notify('error', '复制失败，请手动选择记录值')
+    }
+  }
+
   const removeOne = async (record: DNSRecord) => {
     if (!window.confirm(`确定删除 ${record.type} 记录“${record.name}”吗？此操作会立即提交到 ${domain ? providerName(domain.provider) : '平台'}。`)) return
     setBusy(true)
@@ -302,7 +311,7 @@ function RecordsPage({ domainId, onBack, notify }: { domainId: string; onBack: (
                     <td className="checkbox-cell"><input type="checkbox" checked={selected.has(record.id)} onChange={() => toggleSelection(record.id)} aria-label={`选择 ${record.name}`} /></td>
                     <td><strong className="host-name">{record.name}</strong>{record.remark && <span className="row-note">{record.remark}</span>}</td>
                     <td><span className={`record-type type-${record.type.toLowerCase()}`}>{record.type}</span></td>
-                    <td><div className="record-value"><code title={record.value}>{record.value}</code><button onClick={() => { void navigator.clipboard?.writeText(record.value); notify('success', '记录值已复制') }} aria-label="复制记录值"><Copy size={14} /></button></div>{record.proxied && <span className="proxy-note">橙云代理</span>}</td>
+                    <td><div className="record-value"><code title={record.value}>{record.value}</code><button onClick={() => void copyRecordValue(record.value)} aria-label="复制记录值"><Copy size={14} /></button></div>{record.proxied && <span className="proxy-note">橙云代理</span>}</td>
                     <td><span className="line-value">{record.line || '默认'}</span><span className="ttl-value">TTL {record.ttl === 1 && domain?.provider === 'cloudflare' ? '自动' : `${record.ttl}s`}</span></td>
                     <td><span className={`status-dot ${isEnabled(record.status) ? 'enabled' : 'disabled'}`}><i />{recordStatus(record.status)}</span></td>
                     <td><div className="row-actions"><button className="icon-button" onClick={() => setEditing(record)} disabled={mutationDisabled || busy} aria-label="编辑"><Edit3 size={15} /></button><button className="icon-button" onClick={() => toggleStatus(record)} disabled={!record.supportsDisable || mutationDisabled || busy} title={record.supportsDisable ? (isEnabled(record.status) ? '暂停' : '启用') : 'Cloudflare 不支持暂停单条记录'} aria-label="启停">{isEnabled(record.status) ? <Pause size={15} /> : <Play size={15} />}</button><button className="icon-button danger-icon" onClick={() => removeOne(record)} disabled={mutationDisabled || busy} aria-label="删除"><Trash2 size={15} /></button></div></td>
@@ -408,4 +417,3 @@ function RecordModal({ domain, record, onClose, onSaved }: { domain: Domain; rec
     </Modal>
   )
 }
-

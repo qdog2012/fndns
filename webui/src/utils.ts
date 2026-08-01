@@ -32,6 +32,51 @@ export const recordStatus = (status: string) => {
 
 export const isEnabled = (status: string) => ['enable', 'active'].includes(status.toLowerCase())
 
+export async function copyText(value: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value)
+      return
+    } catch {
+      // 内网 HTTP、跨来源 iframe 或浏览器权限策略可能拒绝 Clipboard API。
+      // 保留当前用户点击产生的激活状态，继续尝试兼容复制方案。
+    }
+  }
+
+  const activeElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  const selection = document.getSelection()
+  const previousRanges = selection ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index).cloneRange()) : []
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.readOnly = true
+  textarea.setAttribute('aria-hidden', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-9999px'
+  textarea.style.top = '0'
+  textarea.style.opacity = '0'
+  textarea.style.pointerEvents = 'none'
+  document.body.appendChild(textarea)
+
+  let copied = false
+  try {
+    textarea.focus({ preventScroll: true })
+    textarea.select()
+    textarea.setSelectionRange(0, textarea.value.length)
+    copied = document.execCommand('copy')
+  } finally {
+    textarea.remove()
+    selection?.removeAllRanges()
+    previousRanges.forEach((range) => selection?.addRange(range))
+    try {
+      activeElement?.focus({ preventScroll: true })
+    } catch {
+      activeElement?.focus()
+    }
+  }
+
+  if (!copied) throw new Error('浏览器未授予剪贴板权限')
+}
+
 export const actionName: Record<string, string> = {
   'credential.create': '添加凭据',
   'credential.update': '编辑凭据',
@@ -43,4 +88,3 @@ export const actionName: Record<string, string> = {
   'record.delete': '删除记录',
   'record.status': '启停记录',
 }
-

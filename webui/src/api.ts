@@ -28,9 +28,12 @@ export class ApiError extends Error {
   }
 }
 
+const webUISessionToken = document.querySelector<HTMLMetaElement>('meta[name="fndns-webui-session"]')?.content.trim() || ''
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
   headers.set('Accept', 'application/json')
+  if (webUISessionToken) headers.set('X-FNDNS-WebUI-Session', webUISessionToken)
   if (options.body) headers.set('Content-Type', 'application/json')
   const basePath = new URL(import.meta.env.BASE_URL, window.location.href).pathname.replace(/\/$/, '')
   const response = await fetch(`${basePath}${path}`, { ...options, headers })

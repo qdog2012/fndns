@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -376,6 +377,11 @@ func (s *Server) static(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", contentType)
 	}
 	if name == "index.html" {
+		if token := webUISessionTokenFromContext(r.Context()); token != "" {
+			marker := []byte("</head>")
+			meta := []byte(`<meta name="fndns-webui-session" content="` + token + `" />`)
+			content = bytes.Replace(content, marker, append(meta, marker...), 1)
+		}
 		w.Header().Set("Cache-Control", "no-cache")
 	} else if strings.Contains(name, "assets/") {
 		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")

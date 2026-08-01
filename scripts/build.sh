@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="${VERSION:-1.0.9}"
+VERSION="${VERSION:-1.0.11}"
 PLATFORM="${PLATFORM:-all}"
 
 command -v go >/dev/null || { echo "需要 Go 1.24+" >&2; exit 1; }

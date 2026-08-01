@@ -1,5 +1,5 @@
 param(
-    [string]$Version = "1.0.9",
+    [string]$Version = "1.0.11",
     [ValidateSet("all", "x86", "arm")]
     [string]$Platform = "all",
     [switch]$SkipTests

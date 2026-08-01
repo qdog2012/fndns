@@ -69,7 +69,7 @@ export default function App() {
         </nav>
         <div className="sidebar-foot">
           <div className="admin-chip"><span><ShieldCheck size={17} /></span><div><strong>FNOS 管理员</strong><small>系统身份已验证</small></div></div>
-          <span className="version">DNS Manager · v1.0.9</span>
+          <span className="version">DNS Manager · v1.0.11</span>
         </div>
       </aside>
 
